@@ -1,0 +1,5 @@
+#debug symbols
+*.dSYM
+
+#model saves (large files)
+saves
