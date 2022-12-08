@@ -15,3 +15,4 @@ To Do:
 - Make the model better
 - Add command line args
 - Speed up the algorithm (make it possible to run on boards larger than 4x4)
+- Make the PlayerBase and GameBase classes more useful, so you can just inherit and plug in some specific mechanics
