@@ -1,5 +1,5 @@
 CC = /usr/local/opt/llvm/bin/clang++ --std=c++20
-CXXFLAGS = -O3 -Wall -I/usr/local/opt/libomp/include -fopenmp -g -std=c++20 -Igenmodlib -Iincludes
+CXXFLAGS = -O0 -Wall -I/usr/local/opt/libomp/include -fopenmp -g -std=c++20 -Igenmodlib -Iincludes
 LDFLAGS = -L/usr/local/opt/llvm/lib
 
 VPATH = src

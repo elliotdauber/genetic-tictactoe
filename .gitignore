@@ -3,3 +3,7 @@
 
 #model saves (large files)
 saves
+
+#binaries
+play
+train

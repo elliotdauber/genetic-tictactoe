@@ -7,7 +7,7 @@ Works but doesn't produce a very good Tic Tac Toe player yet
 Steps:
 make
 To train a model, run ./train
-To play against it, run ./play
+To play against it, run ./play <filename>
 
 To Do:
 Make the model better

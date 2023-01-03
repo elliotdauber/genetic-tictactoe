@@ -12,7 +12,17 @@ class BoardEncoding {
         BoardEncoding();
         BoardEncoding(uint64_t value, int size);
         int get_value_at(int index) { return encoding[index]; }
-        void set_value_at(int index, int value) {encoding[index] = value;}
+        void set_value_at(int index, int value) {
+            if (value > 0) { //TODO: does not yet add the index to open_spaces if is a 0
+                for (int i = 0; i < open_spaces.size(); i++) {
+                    if (open_spaces[i] == index) {
+                        open_spaces.erase(open_spaces.begin() + i);
+                        break;
+                    }
+                }
+            } 
+            encoding[index] = value;
+        }
         int get_open_space();
         uint64_t value(); 
     private:

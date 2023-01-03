@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <queue>
 
 using namespace std;
 
@@ -34,6 +35,7 @@ class GeneticModelerBase {
         virtual void delete_agent(PlayerT *agent) = 0;
         virtual int get_agent_fitness(PlayerT *agent) = 0;
         virtual void play_game(PlayerT *agent1, PlayerT *agent2) = 0; 
+        virtual bool compare_agents(PlayerT *agent1, PlayerT *agent2) = 0;
 };
 
 
@@ -104,16 +106,44 @@ void GeneticModelerBase<PlayerT, GameT>::run_matches(vector<PlayerT*> *generatio
 
 template <typename PlayerT, typename GameT>
 void GeneticModelerBase<PlayerT, GameT>::fill_weighted_generation(vector<PlayerT*> *generation, vector<PlayerT*> *weighted_generation) {
+    size_t top_n = 10; //TODO: choose this dynamically!
+    
+    // for (int i = 0; i < generation->size(); i++) {
+    //     if (generation->at(i) == nullptr) {
+    //         printf("\n\n\n\n\n\n\n\nTOUGH\n\n\n\n\n\n\n\n\n\n");
+    //     }
+    // }
+    // sort(generation->begin(), generation->end(), 
+    //     [this] (PlayerT* a, PlayerT* b) {
+    //         return this->compare_agents(a, b);
+    // });
+
+    // nth_element(generation->begin(), generation->begin() + top_n, generation->end(),
+    //                [this](PlayerT* a, PlayerT* b) { return this->compare_agents(a, b); });
+    priority_queue<PlayerT*> most_fit;
+
+    // printf("SORTED\n");
     int min_fitness = get_agent_fitness(generation->at(0));
-    for (size_t i = 1; i < generation->size(); i++) {
+    for (size_t i = 1; i < top_n; i++) {
         PlayerT *player = generation->at(i);
         int fitness = get_agent_fitness(player);
         if (fitness < min_fitness) {
             min_fitness = fitness;
         }
+        if (most_fit.size() < top_n) {
+            most_fit.push(player);
+        } else {
+            if (compare_agents(player, most_fit.top())) {
+                most_fit.pop();
+                most_fit.push(player);
+            }
+        }
     }
-    for (size_t i = 0; i < generation->size(); i++) {
-        PlayerT *player = generation->at(i);
+
+    // printf("MIN FITNESS: %d\n", min_fitness);
+    for (size_t i = 0; i < most_fit.size(); i++) {
+        PlayerT *player = most_fit.top();
+        most_fit.pop();
         int num_weighted = get_agent_fitness(player) - min_fitness + 1;
         printf("[%zu] num weighted: %d\n", i, num_weighted);
         for (int i = 0; i < num_weighted; i++) {
@@ -124,6 +154,7 @@ void GeneticModelerBase<PlayerT, GameT>::fill_weighted_generation(vector<PlayerT
 
 template <typename PlayerT, typename GameT>
 void GeneticModelerBase<PlayerT, GameT>::create_new_generation(vector<PlayerT*> *weighted_generation, vector<PlayerT*> *new_generation) {
+    // printf("creating new generation\n");
     size_t num_weighted = weighted_generation->size();
     for (int i = 0; i < generation_size; i++) {
         int mother_idx = rand() % num_weighted;
@@ -133,16 +164,22 @@ void GeneticModelerBase<PlayerT, GameT>::create_new_generation(vector<PlayerT*> 
         PlayerT *child = generate_child_agent(mother, father);
         new_generation->push_back(child);
     }
+    // printf("created new generation!\n");
 }
 
 template <typename PlayerT, typename GameT>
 void GeneticModelerBase<PlayerT, GameT>::run_generation(vector<PlayerT*> *old_generation, vector<PlayerT*> *new_generation) {
+    // printf("RUNNING MATCHES\n");
     run_matches(old_generation);
+    // printf("RAN MATCHES\n");
     vector<PlayerT*> *weighted_generation = new vector<PlayerT*>;
+    // printf("FILLING WEIGHTED GEN\n");
     fill_weighted_generation(old_generation, weighted_generation);
+    // printf("FILLED WEIGHTED GEN\n");
     create_new_generation(weighted_generation, new_generation);
     
     delete weighted_generation;
+    // printf("DONE RUNNING\n");
 }
 
 template <typename PlayerT, typename GameT>
@@ -150,18 +187,21 @@ void GeneticModelerBase<PlayerT, GameT>::run() {
     init();
 
     vector<PlayerT*> *old_generation = new vector<PlayerT*>(generation_size);
+    // vector<PlayerT*> *old_generation = new vector<PlayerT*>;
     vector<PlayerT*> *new_generation = new vector<PlayerT*>;
 
     cout << "\tinititalizing " << generation_size << " players... " << endl;
 
-    #pragma omp parallel for
+    // #pragma omp parallel for
     for (int i = 0; i < generation_size; i++) {
         (*old_generation)[i] = generate_random_agent();
+        // old_generation->push_back(generate_random_agent());
     }
 
     cout << "done initializing... " << endl;
 
     for (int i = 0; i < num_generations; i++) {
+        cout << "running generation " << i << endl;
         run_generation(old_generation, new_generation);
         cout << "ran generation " << i << endl;
 
@@ -181,7 +221,7 @@ void GeneticModelerBase<PlayerT, GameT>::run() {
             best_player = old_generation->at(i);
         }
     }
-    best_player->write_genome_to_file();
+    best_player->write_genome_to_file(5); //TODO!!!! DYNAMIC DIMENSION!
 
     delete old_generation;
     delete new_generation;

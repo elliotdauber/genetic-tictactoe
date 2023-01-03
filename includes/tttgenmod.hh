@@ -9,18 +9,19 @@ class TTTGeneticModeler : public GeneticModelerBase<TTTModelPlayer, TTTGame> {
         TTTGeneticModeler(int generation_size, int num_rounds_per_generation, int num_generations, int board_dimension)
             : GeneticModelerBase<TTTModelPlayer, TTTGame>(generation_size, num_rounds_per_generation, num_generations), board_dimension(board_dimension) {}
     private:
-        BoardEncodings *encodings;
+        // BoardEncodings *encodings;
         int board_dimension;
 
         void init() override {
-            encodings = new BoardEncodings(board_dimension);
+            // encodings = new BoardEncodings(board_dimension);
         }
         void cleanup() override {
-            delete encodings;
+            // delete encodings;
         }
 
         TTTModelPlayer *generate_random_agent() override {
-            return new TTTModelPlayer(encodings);
+            // return new TTTModelPlayer(encodings);
+            return new TTTModelPlayer();
         }
         TTTModelPlayer *generate_child_agent(TTTModelPlayer *mother, TTTModelPlayer *father) override {
             return new TTTModelPlayer(mother, father);
@@ -36,6 +37,9 @@ class TTTGeneticModeler : public GeneticModelerBase<TTTModelPlayer, TTTGame> {
             TTTGame game = TTTGame(agent1, agent2, board_dimension);
             game.play(false);
         }
-};
 
+        bool compare_agents(TTTModelPlayer *agent1, TTTModelPlayer *agent2) override {
+            return agent1->get_fitness() >= agent2->get_fitness();
+        }
+};
 #endif

@@ -17,21 +17,31 @@ typedef short Gene;
 class TTTPlayer : public PlayerBase {
     public:
         TTTPlayer() : PlayerBase() {}
+        TTTPlayer(int fit) : PlayerBase(fit) {}
         virtual Gene do_turn(Board *board) = 0;
         int get_fitness() override {return fitness;}
         void add_to_fitness(int fit) override {fitness += fit;}
-        // virtual ~TTTPlayer() = 0;
 };
 
 class TTTModelPlayer : public TTTPlayer {
     public:
-        Gene do_turn(Board *board) {return gene_for(board->get_encoding());}
+        // Gene do_turn(Board *board) {return gene_for(board->get_encoding());}
+        Gene do_turn(Board *board) {
+            BoardEncoding encoding = board->get_encoding();
+            auto it = gene_map.find(encoding.value());
+            if (it == gene_map.end()) {
+                Gene gene = encoding.get_open_space();
+                gene_map.insert({encoding.value(), gene});
+                return gene;
+            }
+            return it->second;
+        }
+        TTTModelPlayer();
         TTTModelPlayer(BoardEncodings *encodings);
         TTTModelPlayer(TTTModelPlayer *mother, TTTModelPlayer *father);
         TTTModelPlayer(string filename);
-        Gene gene_for(BoardEncoding encoding);
-        Gene gene_for(uint64_t value);
-        void write_genome_to_file();
+        void write_genome_to_file(int dim);
+        map<uint64_t, Gene> gene_map; //TODO: BAD STYLE
     private:
         vector<Gene> genes;
 };

@@ -33,20 +33,23 @@ TTTPlayer *TTTGame::play(bool print_board) {
     if (print_board) player1_board.print();
 
     if (winner == nullptr) {
-        player1->add_to_fitness(0);
-        player2->add_to_fitness(0);
+        player1->add_to_fitness(-7);
+        player2->add_to_fitness(-7);
         if (print_board) printf("Result: Tie");
     } else {
+        int dim = player1_board.get_dimension();
+        int area = dim * dim;
         TTTPlayer *loser = winner == player1 ? player2 : player1;
-        if (num_moves < player1_board.get_dimension() + 2) {
-            winner->add_to_fitness(20);
-            loser->add_to_fitness(-10);
+        if (num_moves < num_moves + 2) {
+            winner->add_to_fitness(50);
+            loser->add_to_fitness(-50);
+        } else if (num_moves > 3 * area / 4) {
+            winner->add_to_fitness(6);
+            loser->add_to_fitness(-3);
         } else {
-            winner->add_to_fitness(3);
-            loser->add_to_fitness(-1);
+            winner->add_to_fitness(7);
+            loser->add_to_fitness(-3);
         }
-        winner->add_to_fitness((player1_board.get_dimension() * 3) - num_moves);
-        loser->add_to_fitness(-10);
         if (print_board) printf("Result: TTTPlayer %d", winner == player1 ? 1 : 2);
     }
     return winner;
